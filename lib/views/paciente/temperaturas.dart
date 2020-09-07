@@ -70,7 +70,15 @@ class _TemperaturasPageState extends State<TemperaturasPage> {
               Map data = snap.data.snapshot.value;
               List item = [];
 
-              data.forEach((index, data) => item.add({"key": index, ...data}));
+              data.forEach((key, data) {
+                var notificacion = {
+                  "key": key,
+                  "temperatura": data['temperatura'],
+                  "timeStamp": data['timeStamp']
+                };
+                item.add(notificacion);
+              });
+
               item.sort((a, b) {
                 return b["timeStamp"].compareTo(a["timeStamp"]);
               });
@@ -86,7 +94,7 @@ class _TemperaturasPageState extends State<TemperaturasPage> {
                       contentPadding: EdgeInsets.all(20.0),
                       dense: true,
                       leading: FaIcon(FontAwesomeIcons.thermometerHalf),
-                      title: Text('${item[index]['temperatura']}'),
+                      title: Text('${item[index]['temperatura']} °'),
                       subtitle: Text('${_dateFormat.format(DateTime.fromMicrosecondsSinceEpoch(item[index]['timeStamp']))}'),
 
                       onTap: (){

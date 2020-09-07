@@ -12,14 +12,14 @@ abstract class BaseAuth {
   Future<FirebaseUser> getUser();
   Future logout();
   Future<FirebaseUser> loginUser(String email, String password);
-  Future<String> refrescarToken(String token, String refreshToken);
+  Future<void> resetPassword(String email);
 }
 
 class Auth  implements BaseAuth{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final databaseReference = FirebaseDatabase.instance.reference();
   final firebaseMessaging = new FirebaseMessaging();
-  final backEndUrl = "https://covid-19-tracker-backend.herokuapp.com";
+  final backEndUrl = "https://us-central1-covid-19-cc7c5.cloudfunctions.net/app";
 
   Future<FirebaseUser> getUser() async {
     FirebaseUser user = await _auth.currentUser();
@@ -32,22 +32,8 @@ class Auth  implements BaseAuth{
   }
 
 
-  Future<String> refrescarToken(String token, String refreshToken) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    Map<String,dynamic> body = {
-      "token": token,
-      "refreshToken": refreshToken
-    };
-    http.post(backEndUrl + '/api/refreshToken', headers: {"Content-Type": 'application/json'}, body: jsonEncode(body)).then((response) {
-      if (response.statusCode == 200) {
-        Map<String,dynamic> datosObtenidos = jsonDecode(response.body);
-        prefs.setString('token', datosObtenidos['token']);
 
-      }
-    }).catchError((e){
-      print(e);
-    });
-  }
+
   void Autenticar(email,password) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('backEndUrl', backEndUrl);
@@ -58,8 +44,8 @@ class Auth  implements BaseAuth{
     http.post(backEndUrl + '/api/medicos/login', headers: {"Content-Type": 'application/json'}, body: jsonEncode(body)).then((response) {
       if (response.statusCode == 200) {
         Map<String,dynamic> datosObtenidos = jsonDecode(response.body);
-        prefs.setString('token', datosObtenidos['token']);
-        prefs.setString('refreshtoken', datosObtenidos['refreshToken']);
+        prefs.setString('token', 'Bearer ' +  datosObtenidos['user']['accessToken']);
+        prefs.setString('refreshtoken', datosObtenidos['user']['refreshToken']);
 
       }
     }).catchError((e){
@@ -98,5 +84,7 @@ class Auth  implements BaseAuth{
   }
 
 
-
+  Future<void> resetPassword(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
 }

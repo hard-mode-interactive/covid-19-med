@@ -26,7 +26,8 @@ class EditarPage extends StatefulWidget {
 
 class _EditarPageState extends State<EditarPage> {
   BaseNotificaciones _notificaciones = new Notificaciones();
-
+  final _formKey = GlobalKey<FormState>();
+  bool autoValidate = false;
   File _image;
 
   String _nombre = '';
@@ -44,6 +45,20 @@ class _EditarPageState extends State<EditarPage> {
     setState(() {
       _image = image;
     });
+  }
+
+  bool validate(){
+    if(_formKey.currentState.validate()){
+      _formKey.currentState.save();
+      return true;
+    }
+    else
+      {
+        setState(() {
+          autoValidate = true;
+        });
+        return false;
+      }
   }
 
   @override
@@ -66,7 +81,7 @@ class _EditarPageState extends State<EditarPage> {
           backgroundColor: Color(0xff3380d6),
           iconTheme: IconThemeData(color: Colors.white),
           title: Text(
-            'Editar NOTIFICACION',
+            'EDITAR NOTIFICACION',
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 2.5 * SizeConfig.safeBlockVertical),
@@ -76,21 +91,25 @@ class _EditarPageState extends State<EditarPage> {
         backgroundColor: Color(0xff3380d6),
         onPressed: () async {
           if (!_loading) {
-            setState(() {
-              _loading = true;
-            });
-            var notificaicon =
-            await _notificaciones.actualizarNotificacion(
-                widget.currentUser,
-                widget.id,
-                _nombre,
-                _descripcion,
-                _contenido,
-                widget.image);
-            setState(() {
-              _loading = true;
-            });
-            Navigator.pop(context);
+
+            if(validate()){
+              setState(() {
+                _loading = true;
+              });
+              var notificaicon =
+              await _notificaciones.actualizarNotificacion(
+                  widget.currentUser,
+                  widget.id,
+                  _nombre,
+                  _descripcion,
+                  _contenido,
+                  widget.image);
+              setState(() {
+                _loading = false;
+              });
+              Navigator.pop(context);
+            }
+
           }
         },
         child: Icon(
@@ -102,67 +121,92 @@ class _EditarPageState extends State<EditarPage> {
       body: !_loading
           ? SingleChildScrollView(
           padding: EdgeInsets.all(20.0),
-          child: Column(
-            children: <Widget>[
-              SizedBox(
-                height: 5.0,
-              ),
-              TextField(
-                onChanged: (val) => _nombre = val,
-                controller: TextEditingController(text: _nombre),
-                decoration: InputDecoration(
-
-//                  icon: Icon(Icons.subject),
-//                  labelText:'Nombre'
-                    helperText: 'Nombre'),
-              ),
-              SizedBox(
-                height: 25.0,
-              ),
-              TextField(
-                onChanged: (val) => _descripcion = val,
-                controller: TextEditingController(text: _descripcion),
-
-                decoration: InputDecoration(
-//                  icon: Icon(Icons.description),
-//                  labelText:'Descripcion'
-                    helperText: 'Descripcion'),
-              ),
-              SizedBox(
-                height: 25.0,
-              ),
-              TextField(
-                onChanged: (val) => _contenido = val,
-                controller: TextEditingController(text: _contenido),
-
-                maxLines: 10,
-                decoration: InputDecoration(helperText: 'Contenido'
-//                  icon: Icon(Icons.assignment),
-//                  labelText:'Contenido'
+          child: Form(
+            key: _formKey,
+            autovalidate: autoValidate,
+            child: Column(
+              children: <Widget>[
+                SizedBox(
+                  height: 5.0,
                 ),
-              ),
-              SizedBox(
-                height: 50.0,
-              ),
-              InkWell(
-                //onTap: getImage,
-                child: Container(
-                  width: 400.0,
-                  height: 200.0,
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black12),
-                      borderRadius: BorderRadius.circular(5.0)),
-                  child: widget.image == null
-                      ? Center(
-                    child: Icon(Icons.image),
-                  )
-                      : Image.network(widget.image, fit: BoxFit.fitWidth,) ,
+                _dataField("Nombre:",_nombre, TextInputType.text,(val){
+                  if(val.length < 5){
+                    return "Al menos 5 caracteres";
+                  }
+                  return null;
+                }, (val)=> _nombre = val),
+
+                SizedBox(
+                  height: 25.0,
                 ),
-              ),
-            ],
+                _dataField("Descripcion:",_descripcion, TextInputType.text,(val){
+                  if(val.length < 5){
+                    return "Al menos 5 caracteres";
+                  }
+                  return null;
+                }, (val)=> _descripcion = val),
+                SizedBox(
+                  height: 25.0,
+                ),
+                TextFormField(
+                  initialValue: _contenido,
+                  validator: (val){
+                    if(val.length < 25){
+                      return "Al menos 25 caracteres";
+                    }
+                    return null;
+                  },
+                  onSaved: (val) => _contenido = val,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                      helperText: 'Contenido',
+                      filled: true
+                  ),
+                ),
+                SizedBox(
+                  height: 50.0,
+                ),
+                InkWell(
+                  //onTap: getImage,
+                  child: Container(
+                    width: 400.0,
+                    height: 200.0,
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black12),
+                        borderRadius: BorderRadius.circular(5.0)),
+                    child: widget.image == null
+                        ? Center(
+                      child: Icon(Icons.image),
+                    )
+                        : Image.network(widget.image, fit: BoxFit.fitWidth,) ,
+                  ),
+                ),
+              ],
+            ),
           ))
           : Center(
         child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  Widget _dataField(String name, String value,TextInputType textType, var validation, var save){
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(name,style: TextStyle(fontWeight: FontWeight.bold),),
+          TextFormField(
+            initialValue: value,
+            validator: validation,
+            keyboardType: textType,
+            onSaved: save,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              filled: true,
+            ),
+          )
+        ],
       ),
     );
   }

@@ -1,7 +1,9 @@
-//import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_youtube/flutter_youtube.dart';
+import 'package:photo_view/photo_view.dart';
 
 import '../../utilities/screenSize.dart';
 
@@ -18,7 +20,12 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
   var _firebaseRef;
   bool _loading = true;
 
-
+  void playYoutubeVideo(String videoUrl) {
+    FlutterYoutube.playYoutubeVideoByUrl(
+      apiKey: "AIzaSyAwr579cdq1ITdDEq3JhDqZPhQqxMiUJxY",
+      videoUrl: videoUrl,
+    );
+  }
 
   void getData(){
     setState(() {
@@ -41,7 +48,6 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
     return Scaffold(
         appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.white),
-          backgroundColor: Color(0xff3380d6),
           title: Text('NOTIFICACIONES',style: TextStyle(color: Colors.white, fontSize: 2.5 * SizeConfig.safeBlockVertical),),
         ),
         body: !_loading ?  StreamBuilder(
@@ -53,8 +59,17 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
               Map data = snap.data.snapshot.value;
               List item = [];
 
-              data.forEach((index, data) => item.add({"key": index, ...data}));
-
+              data.forEach((key, data) {
+                var notificacion = {
+                  "key": key,
+                  "nombre": data['nombre'],
+                  "descripcion": data['descripcion'],
+                  "contenido": data['contenido'],
+                  "foto": data['foto'],
+                  "video": data['video']
+                };
+                item.add(notificacion);
+              });
               return ListView.builder(
                 itemCount: item.length,
 
@@ -77,34 +92,64 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
                               ),
                               title: Text('Informacion'),
                               content:SingleChildScrollView(
-                                child: Column(
-                                  children: <Widget>[
-                                    Text('${item[index]['contenido']}'),
-                                    SizedBox(
-                                      height: 25.0,
-                                    ),
-                                    item[index]['foto'] != null ? Image.network(item[index]['foto'],fit: BoxFit.fill,
-                                      loadingBuilder:(BuildContext context, Widget child,ImageChunkEvent loadingProgress) {
-                                        if (loadingProgress == null) return child;
-                                        return Center(
-                                          child: Column(
-                                            children: <Widget>[
-                                              Text('Cargando imagen'),
-                                              SizedBox(
-                                                height: 25.0,
-                                              ),
-                                              CircularProgressIndicator(
-                                                value: loadingProgress.expectedTotalBytes != null ?
-                                                loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes
-                                                    : null,
-                                              ),
-                                            ],
-                                          )
-                                        );
-                                      },
-                                    ) : Container()
-                                  ],
-                                )
+                                  child: Column(
+                                    children: <Widget>[
+                                      Text('${item[index]['contenido']}'),
+
+                                      SizedBox(
+                                        height: 25.0,
+                                      ),
+                                      item[index]['foto'] != null ? InkWell(
+                                        onTap: (){
+                                          return showDialog(
+                                            builder: (context) {
+                                              return  Container(
+                                                  width: SizeConfig.screenWidth,
+                                                  height: SizeConfig.screenHeight,
+                                                  child: PhotoView(
+                                                    imageProvider: NetworkImage(item[index]['foto']),
+                                                  )
+                                              );
+                                            },
+                                            context: context,
+                                          );
+                                        },
+                                        child: Image.network(item[index]['foto'],fit: BoxFit.fill,
+                                          loadingBuilder:(BuildContext context, Widget child,ImageChunkEvent loadingProgress) {
+                                            if (loadingProgress == null) return child;
+                                            return Center(
+                                                child: Column(
+                                                  children: <Widget>[
+                                                    Text('Cargando imagen'),
+                                                    SizedBox(
+                                                      height: 25.0,
+                                                    ),
+                                                    CircularProgressIndicator(
+                                                      value: loadingProgress.expectedTotalBytes != null ?
+                                                      loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes
+                                                          : null,
+                                                    ),
+                                                  ],
+                                                )
+                                            );
+                                          },
+                                        ),
+                                      ) : Container(),
+                                      item[index]['video'] != null ? Container(
+                                        decoration: BoxDecoration(
+                                            color: Colors.orange,
+                                            borderRadius: BorderRadius.circular(25.0),
+                                            border: Border.all(color: Colors.transparent)
+                                        ),
+                                        child: FlatButton(
+                                          child: Text("Ver video",style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                                          onPressed: (){
+                                            playYoutubeVideo(item[index]['video'] );
+                                          },
+                                        ),
+                                      ): Container()
+                                    ],
+                                  )
                               ),
                               actions: <Widget>[
                                 FlatButton(

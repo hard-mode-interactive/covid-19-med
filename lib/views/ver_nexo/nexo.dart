@@ -91,7 +91,7 @@ class _VerNexoPageState extends State<VerNexoPage> {
                     _loading = true;
                   });
                   await _nexos.notificarUnPaciente(widget.datos).then((value){
-
+                    print(value.body);
                     setState(() {
                       _loading = false;
                     });

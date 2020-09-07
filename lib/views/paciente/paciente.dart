@@ -1,4 +1,5 @@
 import 'package:coronavirusmed/services/pacientes.dart';
+import 'package:coronavirusmed/utilities/screenSize.dart';
 import 'package:coronavirusmed/views/nexos_epidemiologicos/nexos_epidemiologicos.dart';
 import 'package:coronavirusmed/views/paciente/temperaturas.dart';
 import 'package:flutter/material.dart';
@@ -43,8 +44,15 @@ class _VerPacientePageState extends State<VerPacientePage> {
     });
 
 
-    _pacientes.pacientePositivo(widget.currentUser.uid, widget.datos['key'], prefs.getString('fcm_token'),widget.datos['nombre']);
+      _pacientes.pacientePositivo(widget.currentUser.uid, widget.datos['key'], prefs.getString('fcm_token'),widget.datos['nombre']).then((value)  {
 
+       setState(() {
+
+         esperando_nexos = false;
+         widget.datos['nexos'] = value;
+
+       });
+     });
 
     return showDialog(
       barrierDismissible: false,
@@ -77,6 +85,7 @@ class _VerPacientePageState extends State<VerPacientePage> {
       _loading = true;
       widget.datos['estado'] = "NEGATIVO";
       widget.datos['nexos'] = null;
+      esperando_nexos = false;
     });
 
     await _pacientes.pacienteNegativo(widget.currentUser, widget.datos['key']).then((val){
@@ -117,68 +126,58 @@ class _VerPacientePageState extends State<VerPacientePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               SizedBox(height: 10.0,),
-              Text("DATOS",style: TextStyle(fontWeight: FontWeight.bold),),
+              Text(widget.datos['nombre'],style: TextStyle(fontWeight: FontWeight.bold, fontSize: 2 * SizeConfig.safeBlockVertical),),
               SizedBox(height: 10.0,),
-              Form(
-                autovalidate: _autoValidate,
-                key: _formKey,
-                child: Column(
-                  children: <Widget>[
-                    TextFormField(
-                      enabled: false,
-                      decoration: InputDecoration(
-                          labelText: widget.datos['uid'],
-                          icon: Text("ID:")
-                      ),
-                    ),
-                    TextFormField(
-                      enabled: false,
-                      decoration: InputDecoration(
-                          labelText: widget.datos['correo'],
-                          icon: Text("Correo:")
-                      ),
-                    ),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15.0),
+                  border: Border.all(color: Colors.black12)
+                ),
+                padding: EdgeInsets.all(10.0),
+                child: Form(
+                  autovalidate: _autoValidate,
+                  key: _formKey,
+                  child: Column(
+                    children: <Widget>[
 
-                    TextFormField(
-                      enabled: false,
-                      decoration: InputDecoration(
-                          labelText: widget.datos['estado'],
-                          icon: Text("Covid-19:")
+                      SizedBox(
+                        height: 2 * SizeConfig.blockSizeVertical,
                       ),
-                    ),
+                      _dataField("Correo:", widget.datos['correo']),
+                      SizedBox(
+                        height: 2 * SizeConfig.blockSizeVertical,
+                      ),
+                      _dataField("Covid-19", widget.datos['estado']),
+                      SizedBox(
+                        height: 2 * SizeConfig.blockSizeVertical,
+                      ),
 
-                    TextFormField(
-                      enabled: false,
-                      decoration: InputDecoration(
-                          labelText: widget.datos['nombre'],
-                          icon: Text("Nombre:")
+                      _dataField("DUI:", widget.datos['dui']),
+                      SizedBox(
+                        height: 2 * SizeConfig.blockSizeVertical,
                       ),
-                    ),
-                    TextFormField(
-                      enabled: false,
+                      _dataField("Direccion:", widget.datos['direccion']),
+                      SizedBox(
+                        height: 2 * SizeConfig.blockSizeVertical,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text("Notas:",style: TextStyle(fontWeight: FontWeight.bold),),
+                          TextFormField(
+                            enabled: false,
+                            maxLines: 5,
+                            initialValue: widget.datos['notas'],
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                filled: true
+                            ),
+                          ),
+                        ],
+                      ),
 
-                      decoration: InputDecoration(
-                          labelText: widget.datos['dui'],
-                          icon: Text("DUI:")
-                      ),
-                    ),
-                    TextFormField(
-                      enabled: false,
-
-                      decoration: InputDecoration(
-                          labelText: widget.datos['direccion'],
-                          icon: Text("Direccion:")
-                      ),
-                    ),
-                    TextFormField(
-                      enabled: false,
-                      maxLines: 5,
-                      decoration: InputDecoration(
-                        labelText: widget.datos['notas'],
-                          icon: Text("Notas")
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               SizedBox(
@@ -234,7 +233,7 @@ class _VerPacientePageState extends State<VerPacientePage> {
               ),
 
 
-              widget.datos['nexos'] != null ? RaisedButton(
+              widget.datos['nexos']  != null && widget.datos ['estado'] == 'POSITIVO' && esperando_nexos == false ? RaisedButton(
                 shape: RoundedRectangleBorder(
                     borderRadius: new BorderRadius.circular(18.0),
                 ),
@@ -258,4 +257,24 @@ class _VerPacientePageState extends State<VerPacientePage> {
       ),
     );
   }
+
+  Widget _dataField(String name, String value){
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(name,style: TextStyle(fontWeight: FontWeight.bold),),
+          TextFormField(
+            enabled: false,
+            initialValue: value,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              filled: true,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
 }

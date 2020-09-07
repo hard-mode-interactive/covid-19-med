@@ -89,12 +89,10 @@ class Notificaciones implements BaseNotificaciones  {
       'nombre':nombre,
       'descripcion':descripcion,
       'contenido':contenido
-//      'foto': url,
-//      'creada_por': currentUser.uid
-
-
 
     };
+
+    print(notificacion);
     databaseReference.child('notificaciones').child(key).update(notificacion).then((val){
       return val;
     });

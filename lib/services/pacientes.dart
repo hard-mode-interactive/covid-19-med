@@ -11,7 +11,7 @@ abstract class BasePacientes {
   Future<DataSnapshot> crearPaciente(FirebaseUser currentUser, var data);
   Future<DataSnapshot> actualizarPaciente(FirebaseUser currentUser,String key, var data);
   Future<DataSnapshot> eliminarPaciente(FirebaseUser currentUser, String key);
-  void pacientePositivo(String medico, String paciente, String fcm_token, String nombre_paciente);
+  Future<List<dynamic>> pacientePositivo(String medico, String paciente, String fcm_token, String nombre_paciente);
   Future<DataSnapshot> pacienteNegativo(FirebaseUser currentUser,String key);
   Future<bool> pacienteExiste(FirebaseUser currentUser, String uid);
  }
@@ -61,16 +61,20 @@ class Pacientes implements BasePacientes  {
 
   Future<DataSnapshot> pacienteNegativo(FirebaseUser currentUser,String key,) async {
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String backEndUrl = prefs.getString('backEndUrl');
+    String token = prefs.getString("token");
 
-    databaseReference.child('medicos').child(currentUser.uid).child('pacientes').child(key).update({"estado":"NEGATIVO", "nexos":null}).then((val){
-      return val;
-    });
 
+
+    var response = await  http.post(backEndUrl + "/api/medicos/${currentUser.uid}/pacientes/$key/negativo",headers: {"Authorization": token, "Content-Type": 'application/json'});
+    print(response.body);
+    return null;
 
   }
 
 
-  void pacientePositivo(String medico, String paciente, String fcm_token, String nombre_paciente) async {
+  Future<List<dynamic>> pacientePositivo(String medico, String paciente, String fcm_token, String nombre_paciente) async {
 
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -90,23 +94,25 @@ class Pacientes implements BasePacientes  {
 
     databaseReference.child('medicos').child(medico).child('pacientes').child(paciente).update(datos);
 
-    http.post(backEndUrl + "/api/medicos/$medico/pacientes/$paciente/positivo",headers: {"Authorization": token, "Content-Type": 'application/json'}, body: jsonEncode(body)).then( (response) async {
-      print(response.statusCode);
-      print(response.body);
-      //      var nexos = jsonDecode(response.body);
-//      print(nexos);
-    });
+    var response = await  http.post(backEndUrl + "/api/medicos/$medico/pacientes/$paciente/positivo",headers: {"Authorization": token, "Content-Type": 'application/json'}, body: jsonEncode(body));
+    var nexos = jsonDecode(response.body)['nexos'];
+    return nexos;
 
 
   }
 
 
 
-  Future<DataSnapshot> eliminarPaciente(FirebaseUser currentUser, String key){
+  Future<DataSnapshot> eliminarPaciente(FirebaseUser currentUser, String key) async {
 
-    databaseReference.child('medicos').child(currentUser.uid).child('pacientes').child(key).remove().then((val){
-      return val;
-    });
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String backEndUrl = prefs.getString('backEndUrl');
+    String token = prefs.getString("token");
+
+
+
+    var response = await  http.delete(backEndUrl + "/api/medicos/${currentUser.uid}/pacientes/$key",headers: {"Authorization": token, "Content-Type": 'application/json'});
+    return null;
   }
 
 

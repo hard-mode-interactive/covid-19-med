@@ -120,14 +120,17 @@ class Nexos implements BaseNexos  {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String backEndUrl = prefs.getString('backEndUrl');
-
+    String token = prefs.getString('token');
     Map<String,dynamic> nexo = {
       "nexo": informacion
     };
 
+    print(nexo);
+
     return http.post(backEndUrl + '/api/notificar/uno',
       headers: <String, String>{
         'Content-Type': 'application/json',
+        'Authorization': token
       },
       body: jsonEncode(nexo),
     );
@@ -138,6 +141,8 @@ class Nexos implements BaseNexos  {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String backEndUrl = prefs.getString('backEndUrl');
+    String token = prefs.getString('token');
+
 
     Map<String,dynamic> nexos = {
       "nexos": informacion
@@ -147,6 +152,7 @@ class Nexos implements BaseNexos  {
       backEndUrl + '/api/notificar/todos',
       headers: <String, String>{
         'Content-Type': 'application/json',
+        'Authorization': token
       },
       body: jsonEncode(nexos),
     );

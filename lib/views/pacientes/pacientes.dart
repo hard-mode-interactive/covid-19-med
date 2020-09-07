@@ -36,6 +36,42 @@ class _PacientesPageState extends State<PacientesPage> {
 
 
 
+  void _estaObteniendoNexos(){
+    showDialog(
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20.0))
+          ),
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text('Por favor espere'),
+              Divider(color: Colors.black26,)
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text('Aun se estan obteniendo los nexos epidemiologicos de esta paciente\nSera notificado cuando este proceso termine.'),
+              SizedBox(height: 10.0,),
+              Divider(color: Colors.black26,)
+            ],
+          ),
+          actions: <Widget>[
+
+            FlatButton(
+              child: Text('Aceptar'),
+              onPressed: ()async {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+      context: context,
+    );
+  }
   void _borrarPaciente(var item, int index) async{
 
     showDialog(
@@ -103,9 +139,16 @@ class _PacientesPageState extends State<PacientesPage> {
                     title: new Text('Ver'),
                     onTap: (){
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (context) => VerPacientePage(currentUser: widget.currentUser,datos:item[index] ,)
-                      ));
+                      if(item[index]['obteniendo_nexos'] != true){
+                        Navigator.push(context, MaterialPageRoute(
+                            builder: (context) => VerPacientePage(currentUser: widget.currentUser,datos:item[index] ,)
+                        ));
+                      }
+                      else
+                        {
+                          _estaObteniendoNexos();
+                        }
+
                     }),
                 new ListTile(
                     leading: new Icon(Icons.edit),
@@ -157,7 +200,27 @@ class _PacientesPageState extends State<PacientesPage> {
               Map data = snap.data.snapshot.value;
               List item = [];
 
-              data.forEach((index, data) => item.add({"key": index, ...data}));
+              //data.forEach((index, data) => item.add({"key": index, ...data}));
+
+              data.forEach((key, data) {
+                var notificacion = {
+                  "key": key,
+                  "estado": data['estado'],
+                  "nombre": data['nombre'],
+                  "correo": data['correo'],
+                  "direccion": data['direccion'],
+                  "dui": data['dui'],
+                  "fcmToken": data['fcmToken'],
+                  "fechaIngreso": data['fechaIngreso'],
+                  "obteniendo_nexos": data['obteniendo_nexos'],
+                  "nexos": data['nexos']
+                };
+                item.add(notificacion);
+              });
+
+              item.sort((a,b){
+                return b['fechaIngreso'].compareTo(a['fechaIngreso']);
+              });
 
               return ListView.builder(
                 itemCount: item.length,
@@ -170,14 +233,16 @@ class _PacientesPageState extends State<PacientesPage> {
                     child: ListTile(
                       contentPadding: EdgeInsets.all(20.0),
                       dense: true,
-                      leading: Icon(Icons.person,color: item[index]['estado'] == "NEGATIVO" ?  Colors.green : Colors.red,),
+                      leading: Icon(Icons.person,color: item[index]['estado'].toString().toUpperCase() == "NEGATIVO" ?  Colors.green : Colors.red,),
                       title: Text('${item[index]['nombre']}'),
-                      subtitle: Text('Covid-19 ${item[index]['estado']}'),
-                      trailing: item[index]['estado'] == "positivo" ?  Column(
+                      subtitle: Text('Covid-19 ${item[index]['estado'].toString().toUpperCase()}'),
+                      trailing: item[index]['estado'].toString().toUpperCase() == "POSITIVO" ?  Column(
                         children: <Widget>[
                           Text('Nexos',style: TextStyle(fontWeight: FontWeight.bold),),
                           SizedBox(height: 5.0,),
-                          Text('${ item[index]['nexos'] != null ? item[index]['nexos'].length : "0"}',style: TextStyle(color: item[index]['nexos'] != null ? Colors.red: Colors.green),)
+
+                          item[index]['obteniendo_nexos'] != true ? Text('${ item[index]['nexos'] != null ? item[index]['nexos'].length : "0"}',style: TextStyle(color: item[index]['nexos'] != null ? Colors.red: Colors.green),):
+                              Text("cargando...")
                         ],
                       ) : null,
                       onTap: (){

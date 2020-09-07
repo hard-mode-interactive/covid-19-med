@@ -1,6 +1,7 @@
 
 import 'package:coronavirusmed/services/auth.dart';
 import 'package:coronavirusmed/utilities/screenSize.dart';
+import 'package:coronavirusmed/views/autenticacion/forgot_password/forgot_password.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +16,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _loading = false;
   final _formKey = GlobalKey<FormState>();
+  bool obscurePass = true;
   String _password;
   String _email;
   TextStyle style = TextStyle(fontFamily: 'Montserrat', fontSize: 20.0);
@@ -91,22 +93,20 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               SizedBox(
-                height: 100.0,
+                height: 10 * SizeConfig.blockSizeVertical,
               ),
               _logo(),
-              SizedBox(height: 75.0),
+              SizedBox(height: 2 * SizeConfig.blockSizeVertical),
 
               _campoCorreo(),
-              SizedBox(height: 25.0),
+              SizedBox(height: 1 * SizeConfig.blockSizeVertical),
               _campoContrasena(),
-              SizedBox(
-                height: 35.0,
-              ),
-              SizedBox(height: 20.0),
+
+              _forgotPassword(),
+
+              SizedBox(height: 2 * SizeConfig.blockSizeVertical),
               _botonEntrar(context),
-              SizedBox(
-                height: 15.0,
-              ),
+
             ])
     );
   }
@@ -115,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _logo(){
     return  SizedBox(
-      height: 155.0,
+      height: 20 * SizeConfig.blockSizeVertical,
       child: Image.asset(
         "assets/logo_covid.png",
         fit: BoxFit.contain,
@@ -123,33 +123,86 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _campoCorreo ()
-  {
-    return TextFormField(
-      obscureText: false,
-      style: TextStyle(fontFamily: 'Montserrat', fontSize: 20.0),
-      validator: (val) => !val.contains('@') ? 'Este no es un correo valido' : null,
-      onSaved: (value) => _email = value,
-      keyboardType: TextInputType.emailAddress,
-      decoration: InputDecoration(
-          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-          hintText: "Correo",
-          border:
-          OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))),
-    );
+  Widget _campoCorreo() {
+    return Container(
+        height: 10 * SizeConfig.blockSizeVertical,
+        margin: EdgeInsets.symmetric(
+          vertical: 1 * SizeConfig.blockSizeVertical,
+        ),
+        child: Container(
+            height: 5 * SizeConfig.blockSizeVertical,
+            child: TextFormField(
+              obscureText: false,
+              style: TextStyle(fontFamily: 'Montserrat', fontSize: 20.0),
+              validator: (val) =>
+              !val.contains('@') ? 'Este no es un correo valido' : null,
+              onSaved: (value) => _email = value,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                  contentPadding: EdgeInsets.fromLTRB(
+                      20.0,
+                      SizeConfig.blockSizeVertical * 3,
+                      20.0,
+                      SizeConfig.blockSizeVertical * 3),
+                  hintText: "Correo",
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(32.0))),
+            )));
   }
 
-  Widget _campoContrasena (){
-    return TextFormField(
-      obscureText: true,
-      style: TextStyle(fontFamily: 'Montserrat', fontSize: 20.0),
-      validator: (val) => val.length < 6 ? 'La contraseña debe tener al menos 6 caracteres' : null,
-      onSaved: (value) => _password = value,
-      decoration: InputDecoration(
-          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-          hintText: "Contraseña",
-          border:
-          OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))),
+  Widget _campoContrasena() {
+    return Container(
+        height: 10 * SizeConfig.blockSizeVertical,
+        margin: EdgeInsets.symmetric(
+          vertical: 1 * SizeConfig.blockSizeVertical,
+        ),
+        child: Container(
+          height: 5 * SizeConfig.blockSizeVertical,
+          child: TextFormField(
+            obscureText: obscurePass,
+            style: TextStyle(fontFamily: 'Montserrat', fontSize: 20.0),
+            validator: (val) => val.length < 6
+                ? 'Al menos 6 caracteres'
+                : null,
+            onSaved: (value) => _password = value,
+            decoration: InputDecoration(
+                contentPadding: EdgeInsets.fromLTRB(
+                    20.0,
+                    SizeConfig.blockSizeVertical * 3,
+                    20.0,
+                    SizeConfig.blockSizeVertical * 3),
+                hintText: "Contraseña",
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(32.0)),
+                suffixIcon: IconButton(
+                  onPressed: (){
+                    setState(() {
+                      obscurePass = !obscurePass;
+                    });
+                  },
+                  icon: obscurePass ? Icon(Icons.lock) : Icon(Icons.lock_open),
+                )
+            ),
+          ),
+        ));
+  }
+
+  Widget _forgotPassword(){
+    return InkWell(
+      onTap: (){
+        Navigator.push(context, MaterialPageRoute(
+            builder: (context) => ForgotPasswordPage(auth: widget.auth,)
+        ));
+      },
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 2 * SizeConfig.blockSizeVertical),
+        alignment: Alignment.centerRight,
+        child: Text('Olvido su contraseña ?',
+            style:
+            TextStyle(fontSize: 1.5 * SizeConfig.safeBlockVertical, fontWeight: FontWeight.w500)),
+      ),
     );
   }
 

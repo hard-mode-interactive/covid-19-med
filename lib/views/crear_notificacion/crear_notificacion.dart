@@ -110,32 +110,22 @@ class _SavePageState extends State<SavePage> {
                     SizedBox(
                       height: 5.0,
                     ),
-                    TextFormField(
-                      validator: (val){
-                        if(val.length < 5){
-                          return "Al menos 5 caracteres";
-                        }
-                        return null;
-                      },
-                      onSaved: (val) => _nombre = val,
-                      decoration: InputDecoration(
+                   _dataField("Nombre:", "", TextInputType.text,(val){
+                     if(val.length < 5){
+                       return "Al menos 5 caracteres";
+                     }
+                     return null;
+                   }, (val)=> _nombre = val),
 
-                          helperText: 'Nombre'),
-                    ),
                     SizedBox(
                       height: 25.0,
                     ),
-                    TextFormField(
-                      validator: (val){
-                        if(val.length < 10){
-                          return "Al menos 10 caracteres";
-                        }
-                        return null;
-                      },
-                      onSaved: (val) => _descripcion = val,
-                      decoration: InputDecoration(
-                          helperText: 'Descripcion'),
-                    ),
+                    _dataField("Descripcion:", "", TextInputType.text,(val){
+                      if(val.length < 5){
+                        return "Al menos 5 caracteres";
+                      }
+                      return null;
+                    }, (val)=> _descripcion = val),
                     SizedBox(
                       height: 25.0,
                     ),
@@ -147,8 +137,10 @@ class _SavePageState extends State<SavePage> {
                         return null;
                       },
                       onSaved: (val) => _contenido = val,
-                      maxLines: 10,
-                      decoration: InputDecoration(helperText: 'Contenido'
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                          helperText: 'Contenido',
+                        filled: true
                           ),
                     ),
                     SizedBox(
@@ -185,6 +177,27 @@ class _SavePageState extends State<SavePage> {
           : Center(
               child: CircularProgressIndicator(),
             ),
+    );
+  }
+
+  Widget _dataField(String name, String value,TextInputType textType, var validation, var save){
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(name,style: TextStyle(fontWeight: FontWeight.bold),),
+          TextFormField(
+            initialValue: value,
+            validator: validation,
+            keyboardType: textType,
+            onSaved: save,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              filled: true,
+            ),
+          )
+        ],
+      ),
     );
   }
 }

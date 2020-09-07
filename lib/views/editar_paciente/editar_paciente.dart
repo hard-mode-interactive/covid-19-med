@@ -1,4 +1,5 @@
 import 'package:coronavirusmed/services/pacientes.dart';
+import 'package:coronavirusmed/utilities/screenSize.dart';
 import 'package:flutter/material.dart';
 
 class EditarPacientePage extends StatefulWidget {
@@ -96,89 +97,67 @@ class _EditarPacientePageState extends State<EditarPacientePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              SizedBox(height: 10.0,),
-              Text("DATOS",style: TextStyle(fontWeight: FontWeight.bold),),
-              SizedBox(height: 10.0,),
               Form(
                 autovalidate: _autoValidate,
                 key: _formKey,
                 child: Column(
                   children: <Widget>[
-                    TextFormField(
-
-                      decoration: InputDecoration(
-                        labelText: widget.datos['uid'],
-                          icon: Text("ID:")
-                      ),
-                      enabled: false,
-                    ),
-                    TextFormField(
-                      enabled: false,
-                      decoration: InputDecoration(
-                        labelText: widget.datos['correo'],
-                          icon: Text("Correo:")
-                      ),
-                    ),
-
-
-
-                    TextFormField(
-                      validator: (val){
-                        if(val.isEmpty){
-                          return "No puede estar vacio.";
+                    _dataField("Nombre:", widget.datos['nombre'],TextInputType.text,(val){
+                      if(val.length < 5){
+                        return "Al menos 5 caracteres";
+                      }
+                      else
+                        {
+                          return null;
                         }
+                    },(val){
+                      setState(() {
+                        widget.datos['nombre'] = val;
+                      });
+                    }),
+                    SizedBox(
+                      height: 2 * SizeConfig.blockSizeVertical,
+                    ),
 
-                        if(val.length < 5){
-                          return "Debe tener al menos 5 caracteres.";
-                        }
+                    _dataField("Dui:", widget.datos['dui'],TextInputType.number,(val){
+                      if(val.length < 9){
+                        return "Al menos 9 digitos";
+                      }
+                      else
+                      {
                         return null;
-                      },
-                      onSaved: (val) => widget.datos['nombre'] = val,
-                      initialValue: widget.datos['nombre'],
-                      decoration: InputDecoration(
-                          icon: Text("Nombre:")
-                      ),
+                      }
+                    },(val){
+                      setState(() {
+                        widget.datos['dui'] = val;
+                      });
+                    }),
+                    SizedBox(
+                      height: 2 * SizeConfig.blockSizeVertical,
                     ),
-                    TextFormField(
-                      validator: (val){
-                        if(val.isEmpty){
-                          return "No puede estar vacio.";
-                        }
-
-                        if(val.length < 9){
-                          return "Debe tener al menos 9 caracteres.";
-                        }
+                    _dataField("Direccion:", widget.datos['direccion'],TextInputType.text,(val){
+                      if(val.length < 10){
+                        return "Al menos 10 caracteres";
+                      }
+                      else
+                      {
                         return null;
-                      },
-                      onSaved: (val) => widget.datos['dui'] = val,
-                      initialValue: widget.datos['dui'],
-                      decoration: InputDecoration(
-                          icon: Text("DUI:")
-                      ),
-                    ),
-                    TextFormField(
-                      validator: (val){
-                        if(val.isEmpty){
-                          return "No puede estar vacio.";
-                        }
-
-                        if(val.length < 9){
-                          return "Debe tener al menos 10 caracteres.";
-                        }
-                        return null;
-                      },
-                      onSaved: (val) => widget.datos['direccion'] = val,
-                      initialValue: widget.datos['direccion'],
-                      decoration: InputDecoration(
-                          icon: Text("Direccion:")
-                      ),
+                      }
+                    },(val){
+                      setState(() {
+                        widget.datos['direccion'] = val;
+                      });
+                    }),
+                    SizedBox(
+                      height: 2 * SizeConfig.blockSizeVertical,
                     ),
                     TextFormField(
                       maxLines: 5,
                       initialValue: widget.datos['notas'],
                       onChanged: (val) => widget.datos['notas'] = val,
                       decoration: InputDecoration(
-                          helperText: "Notas"
+                          helperText: "Notas",
+                        filled: true
                       ),
                     ),
                   ],
@@ -188,6 +167,27 @@ class _EditarPacientePageState extends State<EditarPacientePage> {
           ),
         ),
       )
+    );
+  }
+
+  Widget _dataField(String name, String value,TextInputType textType, var validation, var save){
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(name,style: TextStyle(fontWeight: FontWeight.bold),),
+          TextFormField(
+            initialValue: value,
+            validator: validation,
+            keyboardType: textType,
+            onSaved: save,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              filled: true,
+            ),
+          )
+        ],
+      ),
     );
   }
 }

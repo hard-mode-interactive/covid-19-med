@@ -3,6 +3,8 @@ import 'package:coronavirusmed/views/editar_notificacion/editar_notificacion.dar
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_youtube/flutter_youtube.dart';
+import 'package:photo_view/photo_view.dart';
 
 import '../../utilities/screenSize.dart';
 
@@ -19,6 +21,15 @@ class _MisNotificacionesPageState extends State<MisNotificacionesPage> {
   var _firebaseRef;
   BaseNotificaciones _notifiaciones = new Notificaciones();
   bool _loading = true;
+
+
+
+  void playYoutubeVideo(String videoUrl) {
+    FlutterYoutube.playYoutubeVideoByUrl(
+      apiKey: "AIzaSyAwr579cdq1ITdDEq3JhDqZPhQqxMiUJxY",
+      videoUrl: videoUrl,
+    );
+  }
 
 
 
@@ -45,29 +56,59 @@ class _MisNotificacionesPageState extends State<MisNotificacionesPage> {
               child: Column(
                 children: <Widget>[
                   Text('${item[index]['contenido']}'),
+
                   SizedBox(
                     height: 25.0,
                   ),
-                  item[index]['foto'] != null ? Image.network(item[index]['foto'],fit: BoxFit.fill,
-                    loadingBuilder:(BuildContext context, Widget child,ImageChunkEvent loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                          child: Column(
-                            children: <Widget>[
-                              Text('Cargando imagen'),
-                              SizedBox(
-                                height: 25.0,
-                              ),
-                              CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null ?
-                                loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes
-                                    : null,
-                              ),
-                            ],
-                          )
+                  item[index]['foto'] != null ? InkWell(
+                    onTap: (){
+                      return showDialog(
+                        builder: (context) {
+                          return  Container(
+                              width: SizeConfig.screenWidth,
+                              height: SizeConfig.screenHeight,
+                              child: PhotoView(
+                                imageProvider: NetworkImage(item[index]['foto']),
+                              )
+                          );
+                        },
+                        context: context,
                       );
                     },
-                  ) : Container()
+                    child: Image.network(item[index]['foto'],fit: BoxFit.fill,
+                      loadingBuilder:(BuildContext context, Widget child,ImageChunkEvent loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                            child: Column(
+                              children: <Widget>[
+                                Text('Cargando imagen'),
+                                SizedBox(
+                                  height: 25.0,
+                                ),
+                                CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null ?
+                                  loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes
+                                      : null,
+                                ),
+                              ],
+                            )
+                        );
+                      },
+                    ),
+                  ) : Container(),
+                  item[index]['video'] != null ? Container(
+                    decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(25.0),
+                        border: Border.all(color: Colors.transparent)
+                    ),
+                    child: FlatButton(
+                      child: Text("Ver video",style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                      onPressed: (){
+                        playYoutubeVideo(item[index]['video'] );
+                      },
+                    ),
+                  ): Container()
                 ],
               )
           ),
@@ -121,7 +162,7 @@ class _MisNotificacionesPageState extends State<MisNotificacionesPage> {
               child: Text('Cancelar'),
             ),
             FlatButton(
-              child: Text('Continuar'),
+              child: Text('Confirmar'),
               onPressed: ()async {
                 Navigator.pop(context);
                 setState(() {
@@ -155,6 +196,7 @@ class _MisNotificacionesPageState extends State<MisNotificacionesPage> {
                     title: new Text('Ver'),
                     onTap: (){
                       Navigator.pop(context);
+
                       _verNotificacion(context,item,index);
                     }),
                 new ListTile(
@@ -206,8 +248,17 @@ class _MisNotificacionesPageState extends State<MisNotificacionesPage> {
               Map data = snap.data.snapshot.value;
               List item = [];
 
-              data.forEach((index, data) => item.add({"key": index, ...data}));
-
+              data.forEach((key, data) {
+                var notificacion = {
+                  "key": key,
+                  "nombre": data['nombre'],
+                  "descripcion": data['descripcion'],
+                  "contenido": data['contenido'],
+                  "foto": data['foto'],
+                  "video": data['video']
+                };
+                item.add(notificacion);
+              });
               return ListView.builder(
                 itemCount: item.length,
 
@@ -222,9 +273,9 @@ class _MisNotificacionesPageState extends State<MisNotificacionesPage> {
                       leading: Icon(Icons.warning,color: Colors.red,),
                       title: Text('${item[index]['nombre']}'),
                       subtitle: Text('${item[index]['descripcion']}'),
-                      onTap: item[index]['contenido'] != null ? (){
-                        _opciones(context,item, index );
-                      }: (){},
+                      onTap: (){
+                        _opciones(context, item, index);
+                      },
                     ),
                   );
                 },

@@ -14,7 +14,7 @@ class _NexosPageState extends State<NexosPage> {
   bool _loading = true;
 
   BaseNexos _nexos = new Nexos();
-  List<Map<String,dynamic>> nexos = [];
+  List<dynamic> nexos = [];
 
   void _getNexos() async{
 
@@ -22,8 +22,8 @@ class _NexosPageState extends State<NexosPage> {
       _loading = true;
     });
 
-    widget.datos.forEach((nexo){
-      print(nexo['infectado']);
+    /*widget.datos.forEach((nexo){
+
       Map<String,dynamic> _newNexo = {
         'infectado': {
           'message': 'Esta es la informacion de la ubicacion y fecha del paciente infectado',
@@ -40,6 +40,7 @@ class _NexosPageState extends State<NexosPage> {
           'email': nexo['posible_infectado']['email'],
           'fcm_token': nexo['posible_infectado']['fcm_token'],
           'date':nexo['posible_infectado']['date'],
+          'uid':nexo['posible_infectado']['uid'],
           'location': {
             'lat': nexo['posible_infectado']['location']['lat'],
             'long': nexo['posible_infectado']['location']['long'],
@@ -48,7 +49,9 @@ class _NexosPageState extends State<NexosPage> {
         }
       };
       nexos.add(_newNexo);
-    });
+    });*/
+
+    nexos = widget.datos;
 
     setState(() {
       _loading = false;
@@ -159,7 +162,7 @@ class _NexosPageState extends State<NexosPage> {
   }
 
 
-  Widget _nexoWidget(Map<String,dynamic> datos) {
+  Widget _nexoWidget(Map<dynamic,dynamic> datos) {
     return ListTile(
       contentPadding: EdgeInsets.all(10.0),
       onTap: (){

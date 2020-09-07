@@ -232,7 +232,7 @@ class _TemperaturaPageState extends State<TemperaturaPage> {
              },
              onSaved: (val) => _temperatura = val,
              decoration: InputDecoration(
-                 labelText: "Tempertura"
+                 labelText: "Tempertura °"
              ),
            ),
            TextFormField(
@@ -279,7 +279,7 @@ class _TemperaturaPageState extends State<TemperaturaPage> {
             onSaved: (val) => _temperatura = val,
             initialValue: widget.datos['temperatura'],
             decoration: InputDecoration(
-                labelText: "Tempertura"
+                labelText: "Tempertura °"
             ),
           ),
           TextFormField(

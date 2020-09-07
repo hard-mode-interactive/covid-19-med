@@ -1,4 +1,5 @@
 import 'package:coronavirusmed/services/pacientes.dart';
+import 'package:coronavirusmed/utilities/screenSize.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -170,17 +171,20 @@ class _AgregarPacientePageState extends State<AgregarPacientePage> {
         backgroundColor: Color(0xff3380d6),
       ),
       body: !_scanned ? Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-
-            FlatButton(
+        child: Center(
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.transparent),
+              borderRadius: BorderRadius.circular(10.0),
+              color: Color(0xff3380d6)
+            ),
+            child: FlatButton(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
               onPressed: scan,
-              color: Color(0xff3380d6),
               child: Text("Escanear codigo QR",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
             ),
-          ],
+          ),
         ),
       ): !_loading ?  SingleChildScrollView(
         child: Container (
@@ -196,97 +200,65 @@ class _AgregarPacientePageState extends State<AgregarPacientePage> {
                 key: _formKey,
                 child: Column(
                   children: <Widget>[
-                    TextFormField(
-                      enabled: false,
-                      decoration: InputDecoration(
-                          labelText: _uid,
-                          icon: Text("ID:")
-                      ),
+
+                    SizedBox(
+                      height: 2 * SizeConfig.blockSizeVertical,
                     ),
-                    TextFormField(
-                      enabled: false,
-                      decoration: InputDecoration(
-                          labelText: _email,
-                          icon: Text("Correo:")
-                      ),
-                    ),
-
-                    Row(
-                      children: <Widget>[
-                        Text("Covid-19"),
-                        SizedBox(width: 10.0,),
-                        DropdownButton<String>(
-                          value: _estado,
-                          items: <String>['NEGATIVO', 'POSITIVO'].map((String value) {
-                            return new DropdownMenuItem<String>(
-                              value: value,
-                              child: new Text(value),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            print(value);
-                            setState(() {
-
-                              _estado = value;
-                            });
-                          },
-                        )
-                      ],
-                    ),
-
-                    TextFormField(
-                      validator: (val){
-                        if(val.isEmpty){
-                          return "No puede estar vacio.";
-                        }
-
-                        if(val.length < 5){
-                          return "Debe tener al menos 5 caracteres.";
-                        }
+                    _dataField("Nombre:", "",TextInputType.text,(val){
+                      if(val.length < 5){
+                        return "Al menos 5 caracteres";
+                      }
+                      else
+                      {
                         return null;
-                      },
-                      onSaved: (val) => _nombre = val,
-                      decoration: InputDecoration(
-                          icon: Text("Nombre:")
-                      ),
+                      }
+                    },(val){
+                      setState(() {
+                        _nombre = val;
+                      });
+                    }),
+                    SizedBox(
+                      height: 2 * SizeConfig.blockSizeVertical,
                     ),
-                    TextFormField(
-                      validator: (val){
-                        if(val.isEmpty){
-                          return "No puede estar vacio.";
-                        }
 
-                        if(val.length < 9){
-                          return "Debe tener al menos 9 caracteres.";
-                        }
+                    _dataField("Dui:", "",TextInputType.number,(val){
+                      if(val.length < 9){
+                        return "Al menos 9 digitos";
+                      }
+                      else
+                      {
                         return null;
-                      },
-                      onSaved: (val) => _dui = val,
-                      decoration: InputDecoration(
-                          icon: Text("DUI:")
-                      ),
+                      }
+                    },(val){
+                      setState(() {
+                        _dui = val;
+                      });
+                    }),
+                    SizedBox(
+                      height: 2 * SizeConfig.blockSizeVertical,
                     ),
-                    TextFormField(
-                      validator: (val){
-                        if(val.isEmpty){
-                          return "No puede estar vacio.";
-                        }
-
-                        if(val.length < 9){
-                          return "Debe tener al menos 10 caracteres.";
-                        }
+                    _dataField("Direccion:", "",TextInputType.text,(val){
+                      if(val.length < 10){
+                        return "Al menos 10 caracteres";
+                      }
+                      else
+                      {
                         return null;
-                      },
-                      onSaved: (val) => _direccion = val,
-                      decoration: InputDecoration(
-                          icon: Text("Direccion:")
-                      ),
+                      }
+                    },(val){
+                      setState(() {
+                        _direccion = val;
+                      });
+                    }),
+                    SizedBox(
+                      height: 2 * SizeConfig.blockSizeVertical,
                     ),
                     TextFormField(
                       maxLines: 5,
                       onChanged: (val) => _notas = val,
                       decoration: InputDecoration(
-                          helperText: "Notas"
+                          helperText: "Notas",
+                          filled: true
                       ),
                     ),
                   ],
@@ -303,6 +275,27 @@ class _AgregarPacientePageState extends State<AgregarPacientePage> {
         child: Icon(Icons.save),
 
       ) : null,
+    );
+  }
+
+  Widget _dataField(String name, String value,TextInputType textType, var validation, var save){
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(name,style: TextStyle(fontWeight: FontWeight.bold),),
+          TextFormField(
+            initialValue: value,
+            validator: validation,
+            keyboardType: textType,
+            onSaved: save,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              filled: true,
+            ),
+          )
+        ],
+      ),
     );
   }
 }
